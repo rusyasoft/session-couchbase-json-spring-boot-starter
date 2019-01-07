@@ -1,0 +1,17 @@
+session-couchbase:
+#  application-namespace: testSessionNamespace
+#
+#  principal-sessions:
+#    enabled: false
+#  in-memory:
+#    enabled: false
+
+  serverNodes: http://200.0.100.92:8091
+  bucketName: userInfo
+  bucketPassword: userInfo
+#  persistent:
+#    retry:
+#      max-attempts: 10
+
+
+

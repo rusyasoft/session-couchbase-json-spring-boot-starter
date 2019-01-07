@@ -1,30 +1,150 @@
-buildscript {
-    ext {
-        springBootVersion = '2.1.1.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    }
+plugins {
+    id 'groovy'
+    id 'maven-publish'
+    id 'jacoco'
+    id 'com.github.kt3k.coveralls' version '2.8.2'
+    id 'maven'
+    id 'signing'
+    id 'pl.allegro.tech.build.axion-release' version '1.9.2'
+    id 'io.codearte.nexus-staging' version '0.11.0'
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
+
+archivesBaseName = name
 
 group = 'io.github.rusyasoft.session.data'
 version = '0.0.1-SNAPSHOT'
+
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
 
+ext.springBootVersion = '2.0.4.RELEASE'
+
+//buildscript {
+//    ext {
+//        springBootVersion = '2.1.1.RELEASE'
+//    }
+//    repositories {
+//        mavenCentral()
+//    }
+//    dependencies {
+//        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+//    }
+//}
+
+//apply plugin: 'java'
+//apply plugin: 'eclipse'
+//apply plugin: 'org.springframework.boot'
+//apply plugin: 'io.spring.dependency-management'
 
 dependencies {
-    implementation('org.springframework.boot:spring-boot-starter')
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-couchbase', version: springBootVersion
+    compile group: 'org.springframework.session', name: 'spring-session-core', version: springBootVersion
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '5.0.7.RELEASE'
+    compile group: 'org.springframework.retry', name: 'spring-retry', version: '1.2.2.RELEASE'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+
+    compileOnly group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
+
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
+    testCompile group: 'org.spockframework', name: 'spock-spring', version: '1.1-groovy-2.4'
+
+    compile('org.projectlombok:lombok:1.16.22')
+    //testCompile('org.projectlombok:lombok:1.16.22')
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.7'
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourceJar
+}
+
+signing {
+    if (project.ext.has('signArtifacts')) {
+        sign configurations.archives
+    }
+}
+
+ext {
+    ossrhUsername = project.ext.has('ossrhUsername') ? project.ext.ossrhUsername : ''
+    ossrhPassword = project.ext.has('ossrhPassword') ? project.ext.ossrhPassword : ''
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.project {
+                name 'Session Couchbase Json Spring Boot Starter'
+                packaging 'jar'
+                description 'Spring Boot starter for Couchbase with Json documents backed HTTP session'
+                url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
+                scm {
+                    connection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
+                    developerConnection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
+                    url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
+                }
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'rusyasoft'
+                        name 'Rustam Rakhimov'
+                        email 'rusyasoft@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourceJar
+        }
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.1'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
+
+
