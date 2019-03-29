@@ -57,6 +57,10 @@ dependencies {
 
     compile('org.projectlombok:lombok:1.16.22')
     //testCompile('org.projectlombok:lombok:1.16.22')
+
+
+    implementation('org.springframework:spring-core:5.0.8.RELEASE') { force=true }
+    implementation('org.springframework:spring-jcl:5.0.8.RELEASE') { force=true }
 }
 
 task wrapper(type: Wrapper) {
@@ -88,43 +92,68 @@ ext {
     ossrhPassword = project.ext.has('ossrhPassword') ? project.ext.ossrhPassword : ''
 }
 
+// ORIGINAL CODE:
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                authentication(userName: ossrhUsername, password: ossrhPassword)
+//            }
+//            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+//                authentication(userName: ossrhUsername, password: ossrhPassword)
+//            }
+//            pom.project {
+//                name 'Session Couchbase Json Spring Boot Starter'
+//                packaging 'jar'
+//                description 'Spring Boot starter for Couchbase with Json documents backed HTTP session'
+//                url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
+//                scm {
+//                    connection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
+//                    developerConnection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
+//                    url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
+//                }
+//                licenses {
+//                    license {
+//                        name 'The Apache License, Version 2.0'
+//                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id 'rusyasoft'
+//                        name 'Rustam Rakhimov'
+//                        email 'rusyasoft@gmail.com'
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+
+//TRYING FOR THE NEXUS
+apply plugin: 'maven'
+
 uploadArchives {
     repositories {
         mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+//            repository(url: "http://nexus.abouthere.kr/content/repositories/snapshots") {
+//                authentication(userName: "withinnexus", password: "with!1234")
+//            }
+
+            snapshotRepository(url: "http://nexus.abouthere.kr/content/repositories/snapshots") {
+                authentication(userName: "withinnexus", password: "with!1234")
             }
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-            pom.project {
-                name 'Session Couchbase Json Spring Boot Starter'
-                packaging 'jar'
-                description 'Spring Boot starter for Couchbase with Json documents backed HTTP session'
-                url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
-                scm {
-                    connection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
-                    developerConnection 'scm:git:https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter.git'
-                    url 'https://github.com/rusyasoft/session-couchbase-json-spring-boot-starter'
-                }
-                licenses {
-                    license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'rusyasoft'
-                        name 'Rustam Rakhimov'
-                        email 'rusyasoft@gmail.com'
-                    }
-                }
-            }
+
+
+//            pom.version = "1.2.5-SNAPSHOT"
+//            pom.artifactId = "cms-security"
+//            pom.groupId = "kr.co.within.puma.security"
         }
     }
 }
+
 
 publishing {
     publications {

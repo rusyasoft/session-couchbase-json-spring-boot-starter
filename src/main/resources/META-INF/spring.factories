@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.github.rusyasoft.session.data.couchbase.config.PersistentConfiguration,\
+  io.github.rusyasoft.session.data.couchbase.config.SessionCouchbaseAutoConfiguration
